@@ -15,10 +15,31 @@ int main(void) {
     return -1;
   }
 
+  ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+  event_queue = al_create_event_queue();
+  if (!event_queue) {
+    fprintf(stderr, "failed to create event queue!\n");
+    al_destroy_display(display);
+    return -1;
+  }
+
+  al_register_event_source(
+      event_queue,
+      al_get_display_event_source(display)
+      );
+
   al_clear_to_color(al_map_rgb(0,100,0));
   al_flip_display();
 
-  al_rest(10.0);
+  for (;;) {
+    ALLEGRO_EVENT event;
+    al_wait_for_event(event_queue, &event);
+
+    if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+      break;
+    }
+  }
+
   al_destroy_display(display);
 
   return 0;
