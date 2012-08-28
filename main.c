@@ -35,14 +35,17 @@ int main(void) {
     return -1;
   }
 
-  al_register_event_source(
-      event_queue,
-      al_get_display_event_source(display)
-      );
-  al_register_event_source(
-      event_queue,
-      al_get_timer_event_source(timer)
-      );
+  if (!al_install_keyboard()) {
+    fprintf(stderr, "failed to install keyboard, press any key to continue\n");
+    return -1;
+  }
+
+  al_register_event_source(event_queue,
+      al_get_display_event_source(display));
+  al_register_event_source(event_queue,
+      al_get_timer_event_source(timer));
+  al_register_event_source(event_queue,
+      al_get_keyboard_event_source());
 
   al_start_timer(timer);
 
@@ -59,7 +62,9 @@ int main(void) {
   }
 
 
-  int color = 0, c2 = 0, c3 = 0;
+  int color = 0, c2 = 0, c3 = 0, x = 100, y = 100;
+  bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
+  memset(stlacene_tlacitka, 0, sizeof(stlacene_tlacitka));
   for (;;) {
     ALLEGRO_EVENT event;
     al_wait_for_event(event_queue, &event);
@@ -69,10 +74,55 @@ int main(void) {
     }
 
     if (event.type == ALLEGRO_EVENT_TIMER) {
+      if (stlacene_tlacitka[ALLEGRO_KEY_LEFT]) {
+        x = x - 10;
+      }
+      if (stlacene_tlacitka[ALLEGRO_KEY_RIGHT]) {
+        x = x + 10;
+      }
+      if (stlacene_tlacitka[ALLEGRO_KEY_UP]) {
+        y = y - 10;
+      }
+      if (stlacene_tlacitka[ALLEGRO_KEY_DOWN]) {
+        y = y + 10;
+      }
+
       al_clear_to_color(al_map_rgb(c2+=3,c3+=7,color+=5));
-      al_draw_bitmap(obrazok, 100, 100, c2);
+      al_draw_bitmap(obrazok, x, y, c2);
       al_flip_display();
     }
+
+    if (event.type == ALLEGRO_EVENT_KEY_DOWN
+      ||event.type == ALLEGRO_EVENT_KEY_UP) {
+
+      ALLEGRO_KEYBOARD_STATE stav_klavesnice;
+      al_get_keyboard_state(&stav_klavesnice);
+
+      if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_ESCAPE)) {
+        exit(0);
+      }
+
+      if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_LEFT)) {
+        stlacene_tlacitka[ALLEGRO_KEY_LEFT] = true;
+      } else {
+        stlacene_tlacitka[ALLEGRO_KEY_LEFT] = false;
+      }
+      if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_RIGHT)) {
+        stlacene_tlacitka[ALLEGRO_KEY_RIGHT] = true;
+      } else {
+        stlacene_tlacitka[ALLEGRO_KEY_RIGHT] = false;
+      }
+      if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_UP)) {
+        stlacene_tlacitka[ALLEGRO_KEY_UP] = true;
+      } else {
+        stlacene_tlacitka[ALLEGRO_KEY_UP] = false;
+      }
+      if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_DOWN)) {
+        stlacene_tlacitka[ALLEGRO_KEY_DOWN] = true;
+      } else {
+        stlacene_tlacitka[ALLEGRO_KEY_DOWN] = false;
+      }
+   }
 
   }
 
