@@ -8,6 +8,11 @@ int main(void) {
     return -1;
   }
 
+  if (!al_init_image_addon()) {
+    fprintf(stderr, "nende nam addon pre obrazky. buuuu\n");
+    return -1;
+  }
+
   ALLEGRO_DISPLAY *display = NULL;
   display = al_create_display(640, 480);
   if (!display) {
@@ -44,7 +49,17 @@ int main(void) {
   al_clear_to_color(al_map_rgb(0,100,0));
   al_flip_display();
 
-  int color = 0;
+
+  ALLEGRO_BITMAP *obrazok = NULL;
+  obrazok = al_load_bitmap("obrazok.png");
+  if (!obrazok) {
+    fprintf(stderr, "beda sa stala!!!11!11 :( obrazok sa stratil!1!1\n");
+    al_destroy_display(display);
+    return -1;
+  }
+
+
+  int color = 0, c2 = 0, c3 = 0;
   for (;;) {
     ALLEGRO_EVENT event;
     al_wait_for_event(event_queue, &event);
@@ -54,12 +69,15 @@ int main(void) {
     }
 
     if (event.type == ALLEGRO_EVENT_TIMER) {
-      al_clear_to_color(al_map_rgb(0,100,color++));
+      al_clear_to_color(al_map_rgb(c2+=3,c3+=7,color+=5));
+      al_draw_bitmap(obrazok, 100, 100, c2);
       al_flip_display();
     }
 
   }
 
+  al_destroy_timer(timer);
+  al_destroy_event_queue(event_queue);
   al_destroy_display(display);
 
   return 0;
