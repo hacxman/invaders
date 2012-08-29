@@ -2,22 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "player.h"
+
 const int SCREEN_W = 640;
 const int SCREEN_H = 480;
 
 
 void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
-  int color = 0, c2 = 0, c3 = 0, x = 100, y = 100;
+  int color = 0, c2 = 0, c3 = 0;
   bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
   memset(stlacene_tlacitka, 0, sizeof(stlacene_tlacitka));
 
-  ALLEGRO_BITMAP *obrazok = NULL;
-  obrazok = al_load_bitmap("obrazok.png");
-  if (!obrazok) {
-    fprintf(stderr, "beda sa stala!!!11!11 :( obrazok sa stratil!1!1\n");
-    //al_destroy_display(display);
-    return;
-  }
+  struct Player *player = player_new();
 
   for (;;) {
     ALLEGRO_EVENT event;
@@ -29,16 +25,16 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
 
     if (event.type == ALLEGRO_EVENT_TIMER) {
       if (stlacene_tlacitka[ALLEGRO_KEY_LEFT]) {
-        x = x - 10;
-        if (x < 0) x = 0;
+        player->x = player->x - 10;
+        if (player->x < 0) player->x = 0;
       }
       if (stlacene_tlacitka[ALLEGRO_KEY_RIGHT]) {
-        x = x + 10;
-        if (x > SCREEN_W - 64) x = SCREEN_W - 64;
+        player->x = player->x + 10;
+        if (player->x > SCREEN_W - 64) player->x = SCREEN_W - 64;
       }
 
       al_clear_to_color(al_map_rgb(100,0,100));
-      al_draw_bitmap(obrazok, x, SCREEN_H - 70, 0);
+      player_draw(player);
       al_flip_display();
     }
 
