@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const int SCREEN_W = 640;
+const int SCREEN_H = 480;
+
+
 void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
   int color = 0, c2 = 0, c3 = 0, x = 100, y = 100;
   bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
@@ -26,19 +30,15 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
     if (event.type == ALLEGRO_EVENT_TIMER) {
       if (stlacene_tlacitka[ALLEGRO_KEY_LEFT]) {
         x = x - 10;
+        if (x < 0) x = 0;
       }
       if (stlacene_tlacitka[ALLEGRO_KEY_RIGHT]) {
         x = x + 10;
-      }
-      if (stlacene_tlacitka[ALLEGRO_KEY_UP]) {
-        y = y - 10;
-      }
-      if (stlacene_tlacitka[ALLEGRO_KEY_DOWN]) {
-        y = y + 10;
+        if (x > SCREEN_W - 64) x = SCREEN_W - 64;
       }
 
-      al_clear_to_color(al_map_rgb(c2+=3,c3+=7,color+=5));
-      al_draw_bitmap(obrazok, x, y, c2);
+      al_clear_to_color(al_map_rgb(100,0,100));
+      al_draw_bitmap(obrazok, x, SCREEN_H - 70, 0);
       al_flip_display();
     }
 
