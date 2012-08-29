@@ -2,69 +2,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(void) {
-  if (!al_init()) {
-    fprintf(stderr, "failed to initialize allegro!\n");
-    return -1;
-  }
-
-  if (!al_init_image_addon()) {
-    fprintf(stderr, "nende nam addon pre obrazky. buuuu\n");
-    return -1;
-  }
-
-  ALLEGRO_DISPLAY *display = NULL;
-  display = al_create_display(640, 480);
-  if (!display) {
-    fprintf(stderr, "failed to create display!\n");
-    return -1;
-  }
-
-  ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-  event_queue = al_create_event_queue();
-  if (!event_queue) {
-    fprintf(stderr, "failed to create event queue!\n");
-    al_destroy_display(display);
-    return -1;
-  }
-
-  ALLEGRO_TIMER *timer = NULL;
-  timer = al_create_timer(1.0/60.0);
-  if (!timer) {
-    fprintf(stderr, "failed to create timer!!!11!1\n");
-    return -1;
-  }
-
-  if (!al_install_keyboard()) {
-    fprintf(stderr, "failed to install keyboard, press any key to continue\n");
-    return -1;
-  }
-
-  al_register_event_source(event_queue,
-      al_get_display_event_source(display));
-  al_register_event_source(event_queue,
-      al_get_timer_event_source(timer));
-  al_register_event_source(event_queue,
-      al_get_keyboard_event_source());
-
-  al_start_timer(timer);
-
-  al_clear_to_color(al_map_rgb(0,100,0));
-  al_flip_display();
-
+void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
+  int color = 0, c2 = 0, c3 = 0, x = 100, y = 100;
+  bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
+  memset(stlacene_tlacitka, 0, sizeof(stlacene_tlacitka));
 
   ALLEGRO_BITMAP *obrazok = NULL;
   obrazok = al_load_bitmap("obrazok.png");
   if (!obrazok) {
     fprintf(stderr, "beda sa stala!!!11!11 :( obrazok sa stratil!1!1\n");
-    al_destroy_display(display);
-    return -1;
+    //al_destroy_display(display);
+    return;
   }
 
-
-  int color = 0, c2 = 0, c3 = 0, x = 100, y = 100;
-  bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
-  memset(stlacene_tlacitka, 0, sizeof(stlacene_tlacitka));
   for (;;) {
     ALLEGRO_EVENT event;
     al_wait_for_event(event_queue, &event);
@@ -126,9 +76,69 @@ int main(void) {
 
   }
 
-  al_destroy_timer(timer);
+}
+
+ALLEGRO_EVENT_QUEUE *init(void) {
+  if (!al_init()) {
+    fprintf(stderr, "failed to initialize allegro!\n");
+    exit(1);
+  }
+
+  if (!al_init_image_addon()) {
+    fprintf(stderr, "nende nam addon pre obrazky. buuuu\n");
+    exit(1);
+  }
+
+  ALLEGRO_DISPLAY *display = NULL;
+  display = al_create_display(640, 480);
+  if (!display) {
+    fprintf(stderr, "failed to create display!\n");
+    exit(1);
+  }
+
+  ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+  event_queue = al_create_event_queue();
+  if (!event_queue) {
+    fprintf(stderr, "failed to create event queue!\n");
+    al_destroy_display(display);
+    exit(1);
+  }
+
+  ALLEGRO_TIMER *timer = NULL;
+  timer = al_create_timer(1.0/60.0);
+  if (!timer) {
+    fprintf(stderr, "failed to create timer!!!11!1\n");
+    exit(1);
+  }
+
+  if (!al_install_keyboard()) {
+    fprintf(stderr, "failed to install keyboard, press any key to continue\n");
+    exit(1);
+  }
+
+  al_register_event_source(event_queue,
+      al_get_display_event_source(display));
+  al_register_event_source(event_queue,
+      al_get_timer_event_source(timer));
+  al_register_event_source(event_queue,
+      al_get_keyboard_event_source());
+
+  al_start_timer(timer);
+
+  al_clear_to_color(al_map_rgb(0,0,0));
+  al_flip_display();
+
+  return event_queue;
+}
+
+int main(void) {
+  ALLEGRO_EVENT_QUEUE *event_queue = init();
+
+  main_loop(event_queue);
+
+/*  al_destroy_timer(timer);
   al_destroy_event_queue(event_queue);
-  al_destroy_display(display);
+  al_destroy_display(display);*/
 
   return 0;
 }
