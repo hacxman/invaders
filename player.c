@@ -1,5 +1,10 @@
 #include "player.h"
 #include <stdlib.h>
+#include <stdio.h>
+
+void player_draw(struct Player *player) {
+  al_draw_bitmap(player->obrazok, player->x, player->y, 0);
+}
 
 struct Player *player_new() {
   struct Player *player;
@@ -9,10 +14,19 @@ struct Player *player_new() {
   player->y = 480 - 70;
   player->lives = 3;
 
+  ALLEGRO_BITMAP *obrazok = NULL;
+  obrazok = al_load_bitmap("obrazok.png");
+  if (!obrazok) {
+    fprintf(stderr, "beda sa stala!!!11!11 :( obrazok sa stratil!1!1\n");
+    return;
+  }
+  player->obrazok = obrazok;
+
   return player;
 }
 
 void player_destroy(struct Player *player) {
+  al_destroy_bitmap(player->obrazok);
   free(player);
 }
 
