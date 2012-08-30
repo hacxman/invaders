@@ -7,13 +7,51 @@
 const int SCREEN_W = 640;
 const int SCREEN_H = 480;
 
+struct Player *player;
+ALLEGRO_MUTEX *mutex;
+
+void * kresliace_vlakno(ALLEGRO_THREAD *thread, void *event_queue) {
+  ALLEGRO_DISPLAY *display = NULL;
+  display = al_create_display(640, 480);
+  if (!display) {
+    fprintf(stderr, "failed to create display!\n");
+    exit(1);
+  }
+
+  al_register_event_source(event_queue,
+      al_get_display_event_source(display));
+
+  while (!al_get_thread_should_stop(thread)) {
+    al_clear_to_color(al_map_rgb(100,0,100));
+    int i = 0;
+
+    al_lock_mutex(mutex);
+       struct Player * _player = player_copy(player);
+    al_unlock_mutex(mutex);
+
+    for (i = 0; i < 300; i++) {
+      player_draw(_player);
+    }
+
+    player_destroy(_player);
+    al_flip_display();
+  }
+
+  al_unregister_event_source(event_queue,
+      al_get_display_event_source(display));
+  al_destroy_display(display);
+}
 
 void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
   int color = 0, c2 = 0, c3 = 0;
   bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
   memset(stlacene_tlacitka, 0, sizeof(stlacene_tlacitka));
 
-  struct Player *player = player_new();
+  player = player_new();
+
+  mutex = al_create_mutex();
+  ALLEGRO_THREAD *thread = al_create_thread(kresliace_vlakno, event_queue);
+  al_start_thread(thread);
 
   for (;;) {
     ALLEGRO_EVENT event;
@@ -24,6 +62,8 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
     }
 
     if (event.type == ALLEGRO_EVENT_TIMER) {
+      al_lock_mutex(mutex);
+
       if (stlacene_tlacitka[ALLEGRO_KEY_LEFT]) {
         player->x = player->x - 10;
         if (player->x < 0) player->x = 0;
@@ -33,9 +73,8 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
         if (player->x > SCREEN_W - 64) player->x = SCREEN_W - 64;
       }
 
-      al_clear_to_color(al_map_rgb(100,0,100));
-      player_draw(player);
-      al_flip_display();
+      al_unlock_mutex(mutex);
+
     }
 
     if (event.type == ALLEGRO_EVENT_KEY_DOWN
@@ -45,7 +84,7 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
       al_get_keyboard_state(&stav_klavesnice);
 
       if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_ESCAPE)) {
-        exit(0);
+        break;
       }
 
       if (al_key_down(&stav_klavesnice, ALLEGRO_KEY_LEFT)) {
@@ -68,9 +107,11 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
       } else {
         stlacene_tlacitka[ALLEGRO_KEY_DOWN] = false;
       }
-   }
-
+    }
   }
+
+  al_destroy_thread(thread);
+
 
 }
 
@@ -85,18 +126,12 @@ ALLEGRO_EVENT_QUEUE *init(void) {
     exit(1);
   }
 
-  ALLEGRO_DISPLAY *display = NULL;
-  display = al_create_display(640, 480);
-  if (!display) {
-    fprintf(stderr, "failed to create display!\n");
-    exit(1);
-  }
 
   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
   event_queue = al_create_event_queue();
   if (!event_queue) {
     fprintf(stderr, "failed to create event queue!\n");
-    al_destroy_display(display);
+//    al_destroy_display(display);
     exit(1);
   }
 
@@ -112,8 +147,8 @@ ALLEGRO_EVENT_QUEUE *init(void) {
     exit(1);
   }
 
-  al_register_event_source(event_queue,
-      al_get_display_event_source(display));
+//  al_register_event_source(event_queue,
+//      al_get_display_event_source(display));
   al_register_event_source(event_queue,
       al_get_timer_event_source(timer));
   al_register_event_source(event_queue,
@@ -121,8 +156,8 @@ ALLEGRO_EVENT_QUEUE *init(void) {
 
   al_start_timer(timer);
 
-  al_clear_to_color(al_map_rgb(0,0,0));
-  al_flip_display();
+//  al_clear_to_color(al_map_rgb(0,0,0));
+//  al_flip_display();
 
   return event_queue;
 }
