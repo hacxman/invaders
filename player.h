@@ -17,5 +17,8 @@ void player_destroy(struct Player* player);
 // vykresli player
 void player_draw(struct Player* player);
 
+//vyrobi kopiu playera
+struct Player * player_copy(struct Player *player);
+
 #endif
 

@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct Player * player_copy(struct Player * player) {
+  struct Player * p = player_new();
+
+  p->x = player->x;
+  p->y = player->y;
+  p->lives = player->lives;
+
+  return p;
+}
+
 void player_draw(struct Player *player) {
   al_draw_bitmap(player->obrazok, player->x, player->y, 0);
 }
