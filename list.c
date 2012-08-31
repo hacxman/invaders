@@ -23,3 +23,27 @@ void list_remove(struct List **list, void *data) {
   }
 }
 
+struct List *list_deep_copy(struct List* list, void*(*copy)(void*)) {
+  if (list == NULL) return NULL;
+
+  struct List * novy = malloc(sizeof(struct List));
+  struct List * posledny = novy;
+
+  while (list != NULL) {
+    posledny->item = copy(list->item);
+    posledny->next = list->next != NULL ? malloc(sizeof(struct List)) : NULL;
+    list = list->next;
+    posledny = posledny->next;
+  }
+
+  return novy;
+}
+
+void list_destroy(struct List *list) {
+  struct List * iterator = list;
+  while (iterator != NULL) {
+    struct List * next = iterator->next;
+    free(iterator);
+    iterator = next;
+  }
+}
