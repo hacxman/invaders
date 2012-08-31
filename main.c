@@ -3,11 +3,31 @@
 #include <stdlib.h>
 
 #include "player.h"
+#include "list.h"
 
 const int SCREEN_W = 640;
 const int SCREEN_H = 480;
 
-struct Player *player;
+struct Objekt {
+  void * objekt;
+  void (*draw)(void*);
+  void (*destroy)(void*);
+  void* (*copy)(void*);
+};
+
+struct Objekt * objekt_copy(struct Objekt *objekt) {
+  struct Objekt * o = malloc(sizeof(struct Objekt));
+
+  o->objekt = objekt->copy(objekt->objekt);
+  o->draw = objekt->draw;
+  o->destroy = objekt->destroy;
+  o->copy = objekt->copy;
+
+  return o;
+}
+
+struct List *scena = NULL;
+
 ALLEGRO_MUTEX *mutex;
 
 void * kresliace_vlakno(ALLEGRO_THREAD *thread, void *event_queue) {
@@ -26,14 +46,31 @@ void * kresliace_vlakno(ALLEGRO_THREAD *thread, void *event_queue) {
     int i = 0;
 
     al_lock_mutex(mutex);
-       struct Player * _player = player_copy(player);
+//       struct Player * _player = player_copy(player);
+       struct List *kopia_sceny = list_deep_copy(scena, objekt_copy);
     al_unlock_mutex(mutex);
 
-    for (i = 0; i < 300; i++) {
+/*    for (i = 0; i < 300; i++) {
       player_draw(_player);
+    }*/
+    struct List *iterator = kopia_sceny;
+    for (; iterator != NULL; iterator = iterator->next) {
+      struct Objekt *obj = iterator->item;
+      obj->draw(obj->objekt);
     }
 
-    player_destroy(_player);
+    //zmazeme kopie objektov z kopie sceny
+    iterator = kopia_sceny;
+    for (; iterator != NULL; iterator = iterator->next) {
+      struct Objekt *obj = iterator->item;
+      obj->destroy(obj->objekt);
+      free(obj);
+    }
+
+    //zmazeme kopiu sceny
+    // list_destroy(kopia_sceny);
+
+//    player_destroy(_player);
     al_flip_display();
   }
 
@@ -47,7 +84,16 @@ void main_loop(ALLEGRO_EVENT_QUEUE *event_queue) {
   bool stlacene_tlacitka[ALLEGRO_KEY_MAX];
   memset(stlacene_tlacitka, 0, sizeof(stlacene_tlacitka));
 
+  struct Player *player;
   player = player_new();
+
+  struct Objekt * obj = malloc(sizeof(struct Objekt));
+
+  list_add(&scena, obj);
+  obj->objekt = player;
+  obj->draw = player_draw;
+  obj->destroy = player_destroy;
+  obj->copy = player_copy;
 
   mutex = al_create_mutex();
   ALLEGRO_THREAD *thread = al_create_thread(kresliace_vlakno, event_queue);
